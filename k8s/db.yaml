@@ -1,0 +1,73 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: myeconomics-db-config
+data:
+  db_user: root
+  db_password: root
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: myeconomics-db-pvclaim
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: myeconomics-db
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: myeconomics-db
+  strategy: {}
+  template:
+    metadata:
+      labels:
+        app: myeconomics-db
+    spec:
+      volumes:
+        - name: myeconomics-db-storage
+          persistentVolumeClaim:
+            claimName: myeconomics-db-pvclaim
+      containers:
+        - image: postgres
+          name: myeconomics-db
+          env:
+            - name: POSTGRES_USER
+              valueFrom:
+                configMapKeyRef:
+                  name: myeconomics-db-config
+                  key: db_user
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                configMapKeyRef:
+                  name: myeconomics-db-config
+                  key: db_password
+            - name: PGDATA
+              value: /var/lib/postgresql/data/pgdata
+            - name: POSTGRES_DB
+              value: sample
+          ports:
+            - containerPort: 5432
+              name: myeconomics-db
+          volumeMounts:
+            - name: myeconomics-db-storage
+              mountPath: /var/lib/postgresql/data
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: myeconomics-db-service
+spec:
+  type: ClusterIP
+  ports:
+    - port: 5432
+  selector:
+    app: myeconomics-db

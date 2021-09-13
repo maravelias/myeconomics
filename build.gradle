@@ -32,6 +32,8 @@ dependencies {
     implementation 'io.jmix.security:jmix-security-ui-starter'
     implementation 'io.jmix.security:jmix-security-data-starter'
     implementation 'io.jmix.localfs:jmix-localfs-starter'
+    implementation 'com.hazelcast:hazelcast'
+    implementation 'com.hazelcast:hazelcast-kubernetes:2.2.3'
 
     implementation 'org.springframework.boot:spring-boot-starter-web'
 
@@ -44,4 +46,8 @@ dependencies {
 
 test {
     useJUnitPlatform()
+}
+
+bootBuildImage {
+    imageName = 'maravelias/myeconomics'
 }
